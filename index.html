@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>李一诺 · 个人工作台</title>
+<style>
+  :root{
+    --bg:#eef1f6; --card:#ffffff; --text:#1f2329; --muted:#8a9099;
+    --border:#e7eaf0; --accent:#4f6ef7; --accent-soft:rgba(79,110,247,.12);
+    --green:#15a06b; --red:#e2553f; --amber:#c98a12; --soft:#f6f8fc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);padding:28px 24px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1140px;margin:0 auto;}
+  a{color:inherit;text-decoration:none;}
+
+  /* ---------- header ---------- */
+  .topbar{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between;margin-bottom:22px;position:relative;}
+  .brand{display:flex;align-items:center;gap:14px;}
+  .avatar{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#5b7cfa,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;box-shadow:0 6px 16px rgba(91,124,250,.35);}
+  .brand h1{font-size:21px;font-weight:600;letter-spacing:.2px;}
+  .meta{font-size:13px;color:var(--muted);margin-top:1px;}
+  .weather{cursor:pointer;border-bottom:1px dashed var(--border);transition:.15s;}
+  .weather:hover{color:var(--accent);}
+  .search{flex:1;min-width:260px;display:flex;gap:8px;}
+  .search select{border:1px solid var(--border);border-radius:11px;padding:0 12px;background:var(--card);color:var(--muted);font-size:13px;}
+  .search input{flex:1;border:1px solid var(--border);border-radius:11px;padding:11px 14px;font-size:14px;background:var(--card);transition:.15s;}
+  .search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .right{display:flex;align-items:center;gap:14px;}
+  .clock{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--text);min-width:92px;text-align:right;letter-spacing:.5px;}
+  .syncBtn{border:1px solid var(--border);background:var(--card);border-radius:11px;padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text);transition:.15s;}
+  .syncBtn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 4px 12px var(--accent-soft);}
+
+  /* ---------- sync panel ---------- */
+  .syncPanel{position:absolute;top:66px;right:0;width:312px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 18px 50px rgba(17,24,39,.18);z-index:30;}
+  .syncPanel h3{font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .syncPanel label{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px;}
+  .syncPanel input{width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;transition:.15s;}
+  .syncPanel input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .syncActions{display:flex;gap:8px;margin-top:14px;}
+  .syncActions .mini{flex:1;text-align:center;}
+  .syncStatus{margin-top:12px;font-size:12px;color:var(--muted);}
+  .syncStatus.ok{color:var(--green);} .syncStatus.warn{color:var(--amber);} .syncStatus.err{color:var(--red);}
+  .syncPanel .hint{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.55;}
+
+  /* ---------- cards ---------- */
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px 20px 18px;box-shadow:0 1px 2px rgba(17,24,39,.04),0 12px 28px -16px rgba(17,24,39,.18);}
+  .card h2{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:9px;}
+  .card h2 .count{margin-left:auto;font-size:12px;color:var(--muted);font-weight:400;}
+  .card-ico{width:28px;height:28px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent);flex:none;}
+  .card-ico svg{width:16px;height:16px;}
+
+  ul{list-style:none;}
+  .item{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid var(--soft);}
+  .item:last-child{border-bottom:none;}
+  .item label{display:flex;align-items:center;gap:11px;flex:1;cursor:pointer;}
+  .item input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;}
+  .item span{font-size:14px;}
+  .item.done span{text-decoration:line-through;color:var(--muted);}
+  .item .del{margin-left:auto;border:none;background:none;color:#c2c7d0;font-size:19px;cursor:pointer;line-height:1;transition:.15s;}
+  .item .del:hover{color:var(--red);}
+  .add{display:flex;gap:8px;margin-top:12px;}
+  .add input{flex:1;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;transition:.15s;}
+  .add input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .add button,.mini{border:1px solid var(--border);background:var(--soft);border-radius:10px;padding:9px 14px;cursor:pointer;font-size:13px;color:var(--text);transition:.15s;}
+  .add button:hover,.mini:hover{border-color:var(--accent);color:var(--accent);background:#fff;}
+  .sub{font-size:12px;color:var(--muted);margin:16px 0 8px;font-weight:500;letter-spacing:.3px;}
+  .sch{display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--soft);}
+  .sch:last-child{border-bottom:none;}
+  .sch .t{font-variant-numeric:tabular-nums;color:var(--accent);font-size:13px;font-weight:600;min-width:44px;}
+  .sch .x{margin-left:auto;color:#c2c7d0;cursor:pointer;border:none;background:none;font-size:17px;transition:.15s;}
+  .sch .x:hover{color:var(--red);}
+
+  .group{margin-bottom:16px;}
+  .group h3{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;letter-spacing:.4px;}
+  .links{display:flex;flex-wrap:wrap;gap:8px;}
+  .link{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:13px;transition:.16s;}
+  .link:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent);box-shadow:0 6px 16px var(--accent-soft);}
+  .link .lk-del{color:#c2c7d0;font-size:13px;margin-left:1px;transition:.15s;}
+  .link .lk-del:hover{color:var(--red);}
+  .addRow{display:flex;gap:6px;margin-top:9px;}
+  .addRow input{border:1px solid var(--border);border-radius:8px;padding:7px 9px;font-size:12px;flex:1;min-width:0;transition:.15s;}
+  .addRow input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+
+  .conn{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--soft);}
+  .conn:last-child{border-bottom:none;}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(21,160,107,.15);}
+  .dot.off{background:#d3d7df;}
+  .conn .name{flex:1;font-size:13.5px;}
+  .conn .tag{font-size:11px;color:var(--muted);background:var(--soft);padding:2px 8px;border-radius:20px;}
+  .conn a.name:hover{color:var(--accent);}
+  .conn .go{font-size:12px;color:var(--accent);cursor:pointer;}
+
+  .memo-card{margin-top:18px;}
+  .memo{width:100%;min-height:130px;border:1px solid var(--border);border-radius:14px;padding:14px;font-family:inherit;font-size:14px;resize:vertical;background:var(--soft);transition:.15s;}
+  .memo:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft);}
+  footer{margin-top:20px;font-size:12px;color:var(--muted);text-align:center;}
+
+  @media(max-width:880px){.grid{grid-template-columns:1fr;}.syncPanel{position:static;width:100%;margin-top:12px;box-shadow:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <div class="avatar">李</div>
+      <div>
+        <h1 id="greet">你好</h1>
+        <div class="meta"><span id="date"></span> · <span class="weather" id="weather" title="点击编辑">晴 28°C</span></div>
+      </div>
+    </div>
+    <form class="search" onsubmit="doSearch(event)">
+      <select id="engine">
+        <option value="bing">必应</option>
+        <option value="baidu">百度</option>
+        <option value="google">Google</option>
+      </select>
+      <input id="q" placeholder="全局搜索：文件 / 网页 / 文档…" autocomplete="off">
+    </form>
+    <div class="right">
+      <div class="clock" id="clock">--:--:--</div>
+      <button class="syncBtn" onclick="toggleSyncPanel()">同步设置</button>
+    </div>
+    <div class="syncPanel" id="syncPanel" style="display:none">
+      <h3><span class="card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg></span>GitHub 同步设置</h3>
+      <label>访问令牌 (token)</label>
+      <input type="password" id="cfgToken" placeholder="ghp_... 或 GitHub Fine-grained">
+      <label>仓库 owner/name</label>
+      <input id="cfgRepo" placeholder="liyinuo/workbench-data">
+      <label>文件路径</label>
+      <input id="cfgPath" placeholder="data.json" value="data.json">
+      <label>分支</label>
+      <input id="cfgBranch" placeholder="main" value="main">
+      <div class="syncActions">
+        <button class="mini" onclick="saveCfgUI()">保存配置</button>
+        <button class="mini" onclick="pullRemote();pushRemote();">立即同步</button>
+      </div>
+      <div class="syncStatus" id="syncStatus">未配置</div>
+      <p class="hint">令牌仅存本机浏览器，不会上传到任何服务器。建议用「仅该仓库 Contents 读写」的细粒度令牌。</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2><span class="card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>今日聚焦<span class="count" id="todoCount"></span></h2>
+      <ul id="todoList"></ul>
+      <div class="add">
+        <input id="todoInput" placeholder="添加待办，回车确认">
+        <button onclick="addTodo()">添加</button>
+      </div>
+      <div class="sub">今日日程</div>
+      <div id="schList"></div>
+      <div class="add">
+        <input id="schTime" placeholder="14:00" style="max-width:74px">
+        <input id="schText" placeholder="日程内容">
+        <button onclick="addSch()">添加</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>快捷入口</h2>
+      <div id="bm"></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>我的账号<span class="count" id="connCount"></span></h2>
+      <div id="conn"></div>
+    </section>
+  </div>
+
+  <section class="card memo-card">
+    <h2><span class="card-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>随手记</h2>
+    <textarea class="memo" id="memo" placeholder="写点什么，自动保存到本地并同步…"></textarea>
+  </section>
+
+  <footer>同步版工作台 · 数据存于你的 GitHub 私有仓库 · 手机电脑打开同一网址即同步</footer>
+</div>
+
+<script>
+const KEY_DATA="workbench_data_v1";
+const KEY_CFG="workbench_sync_cfg";
+const DEFAULTS={
+  weather:"晴 28°C",
+  todos:[
+    {id:1,text:"评审投放周报草案",done:false},
+    {id:2,text:"14:00 团队同步会",done:false},
+    {id:3,text:"整理手机品类数据",done:true}
+  ],
+  schedule:[
+    {id:1,time:"09:30",text:"站会"},
+    {id:2,time:"14:00",text:"团队同步会"}
+  ],
+  bookmarks:{
+    "工作":[
+      {id:1,name:"腾讯文档",url:"https://docs.qq.com"},
+      {id:2,name:"飞书",url:"https://www.feishu.cn"},
+      {id:3,name:"企业微信",url:"https://work.weixin.qq.com"}
+    ],
+    "常用":[
+      {id:1,name:"GitHub",url:"https://github.com"},
+      {id:2,name:"百度网盘",url:"https://pan.baidu.com"},
+      {id:3,name:"金山文档",url:"https://www.kdocs.cn"}
+    ],
+    "工具":[
+      {id:1,name:"必应搜索",url:"https://www.bing.com"},
+      {id:2,name:"JSON 格式化",url:"https://jsonformatter.org"}
+    ]
+  },
+  connectors:[
+    {name:"腾讯文档",url:"https://docs.qq.com",status:"off"},
+    {name:"飞书",url:"https://www.feishu.cn",status:"off"},
+    {name:"GitHub",url:"https://github.com",status:"off"},
+    {name:"企业微信",url:"https://work.weixin.qq.com",status:"off"},
+    {name:"腾讯会议",url:"https://meeting.tencent.com",status:"off"},
+    {name:"金山文档",url:"https://www.kdocs.cn",status:"off"},
+    {name:"百度网盘",url:"https://pan.baidu.com",status:"off"},
+    {name:"ima 知识库",url:"",status:"on"}
+  ],
+  memo:""
+};
+let data=loadData();
+let cfg=loadCfg();
+function loadData(){try{return Object.assign(JSON.parse(JSON.stringify(DEFAULTS)),JSON.parse(localStorage.getItem(KEY_DATA)||"{}"));}catch(e){return JSON.parse(JSON.stringify(DEFAULTS));}}
+function loadCfg(){try{return JSON.parse(localStorage.getItem(KEY_CFG)||"null")||null;}catch(e){return null;}}
+function persistLocal(){localStorage.setItem(KEY_DATA,JSON.stringify(data));}
+function saveData(){persistLocal();scheduleSync();}
+function saveCfg(){localStorage.setItem(KEY_CFG,JSON.stringify(cfg));}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function uid(){return Date.now()+Math.floor(Math.random()*1000);}
+
+/* ---------- clock + greet ---------- */
+function tick(){
+  const d=new Date(),p=n=>String(n).padStart(2,"0");
+  document.getElementById("clock").textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  const days=["周日","周一","周二","周三","周四","周五","周六"];
+  document.getElementById("date").textContent=`${d.getMonth()+1}月${d.getDate()}日 ${days[d.getDay()]}`;
+  const h=d.getHours();
+  document.getElementById("greet").textContent=(h<6?"凌晨好":h<12?"早上好":h<14?"中午好":h<18?"下午好":"晚上好")+"，李一诺";
+}
+setInterval(tick,1000);tick();
+
+/* ---------- weather ---------- */
+const wEl=document.getElementById("weather");
+wEl.textContent=data.weather;
+wEl.onclick=()=>{const v=prompt("编辑天气/状态文字：",data.weather);if(v!==null){data.weather=v;wEl.textContent=v;saveData();}};
+
+/* ---------- search ---------- */
+function doSearch(e){e.preventDefault();const q=document.getElementById("q").value.trim();if(!q)return;const eng=document.getElementById("engine").value;const map={bing:"https://www.bing.com/search?q=",baidu:"https://www.baidu.com/s?wd=",google:"https://www.google.com/search?q="};window.open(map[eng]+encodeURIComponent(q),"_blank");}
+
+/* ---------- todos ---------- */
+function renderTodos(){
+  const el=document.getElementById("todoList");el.innerHTML="";
+  data.todos.forEach(t=>{
+    const li=document.createElement("li");li.className="item"+(t.done?" done":"");
+    li.innerHTML=`<label><input type="checkbox" ${t.done?"checked":""} onchange="toggleTodo(${t.id})"><span>${esc(t.text)}</span></label><button class="del" onclick="delTodo(${t.id})" title="删除">×</button>`;
+    el.appendChild(li);
+  });
+  const left=data.todos.filter(t=>!t.done).length;
+  document.getElementById("todoCount").textContent=data.todos.length?`${left} 项待办`:"";
+}
+function addTodo(){const i=document.getElementById("todoInput");const v=i.value.trim();if(!v)return;data.todos.push({id:uid(),text:v,done:false});i.value="";saveData();renderTodos();}
+function toggleTodo(id){const t=data.todos.find(x=>x.id===id);if(t)t.done=!t.done;saveData();renderTodos();}
+function delTodo(id){data.todos=data.todos.filter(x=>x.id!==id);saveData();renderTodos();}
+document.getElementById("todoInput").addEventListener("keydown",e=>{if(e.key==="Enter")addTodo();});
+
+/* ---------- schedule ---------- */
+function renderSch(){
+  const el=document.getElementById("schList");el.innerHTML="";
+  data.schedule.forEach(s=>{
+    const d=document.createElement("div");d.className="sch";
+    d.innerHTML=`<span class="t">${esc(s.time)}</span><span>${esc(s.text)}</span><button class="x" onclick="delSch(${s.id})" title="删除">×</button>`;
+    el.appendChild(d);
+  });
+}
+function addSch(){const t=document.getElementById("schTime").value.trim();const x=document.getElementById("schText").value.trim();if(!x)return;data.schedule.push({id:uid(),time:t||"--:--",text:x});document.getElementById("schTime").value="";document.getElementById("schText").value="";saveData();renderSch();}
+function delSch(id){data.schedule=data.schedule.filter(x=>x.id!==id);saveData();renderSch();}
+
+/* ---------- bookmarks ---------- */
+function renderBm(){
+  const root=document.getElementById("bm");root.innerHTML="";
+  Object.keys(data.bookmarks).forEach(g=>{
+    const box=document.createElement("div");box.className="group";
+    let links=data.bookmarks[g].map(b=>`<a class="link" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.name)}<span class="lk-del" onclick="delBm('${esc(g)}',${b.id})" title="删除">×</span></a>`).join("");
+    box.innerHTML=`<h3>${esc(g)}</h3><div class="links">${links}</div>
+      <div class="addRow"><input placeholder="名称" id="bn-${esc(g)}"><input placeholder="网址 https://" id="bu-${esc(g)}"><button class="mini" onclick="addBm('${esc(g)}')">＋</button></div>`;
+    root.appendChild(box);
+  });
+}
+function addBm(g){const n=document.getElementById("bn-"+g).value.trim();const u=document.getElementById("bu-"+g).value.trim();if(!n||!u)return;let url=u;if(!/^https?:\/\//.test(url))url="https://"+url;data.bookmarks[g].push({id:uid(),name:n,url});document.getElementById("bn-"+g).value="";document.getElementById("bu-"+g).value="";saveData();renderBm();}
+function delBm(g,id){data.bookmarks[g]=data.bookmarks[g].filter(x=>x.id!==id);saveData();renderBm();}
+
+/* ---------- connectors ---------- */
+function renderConn(){
+  const el=document.getElementById("conn");el.innerHTML="";
+  const on=data.connectors.filter(c=>c.status==="on").length;
+  document.getElementById("connCount").textContent=`已连接 ${on}/${data.connectors.length}`;
+  data.connectors.forEach(c=>{
+    const d=document.createElement("div");d.className="conn";
+    const inner=c.url?`<a class="name" href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.name)}</a>`:`<span class="name">${esc(c.name)}</span>`;
+    d.innerHTML=`<span class="dot ${c.status==="on"?"on":"off"}"></span>${inner}<span class="tag">${c.status==="on"?"已连接":"未连接"}</span>${c.url?'<a class="go" href="'+esc(c.url)+'" target="_blank" rel="noopener">打开 ↗</a>':""}`;
+    el.appendChild(d);
+  });
+}
+
+/* ---------- memo ---------- */
+const memoEl=document.getElementById("memo");memoEl.value=data.memo;
+memoEl.addEventListener("input",()=>{data.memo=memoEl.value;saveData();});
+
+/* ---------- GitHub sync ---------- */
+function b64encode(str){const bytes=new TextEncoder().encode(str);let bin="";bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin);}
+function b64decode(b64){const bin=atob(b64);const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes);}
+function syncReady(){return cfg&&cfg.token&&cfg.repo&&cfg.path&&cfg.branch;}
+function setStatus(t,k){const el=document.getElementById("syncStatus");el.textContent=t;el.className="syncStatus"+(k?" "+k:"");}
+let syncTimer=null,pushing=false;
+function scheduleSync(){if(!syncReady())return;setStatus("同步中…","warn");clearTimeout(syncTimer);syncTimer=setTimeout(pushRemote,1500);}
+async function pushRemote(){
+  if(!syncReady()||pushing)return;
+  pushing=true;setStatus("同步中…","warn");
+  const {token,repo,path,branch}=cfg;
+  const content=b64encode(JSON.stringify(data));
+  try{
+    let sha=null;
+    const g=await fetch(`https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path)}?ref=${branch}`,{headers:{Authorization:"token "+token,Accept:"application/vnd.github+json"}});
+    if(g.ok){sha=(await g.json()).sha;}else if(g.status!==404){throw new Error("读取失败 "+g.status);}
+    const body={message:"workbench sync",content,branch};if(sha)body.sha=sha;
+    const p=await fetch(`https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path)}`,{method:"PUT",headers:{Authorization:"token "+token,Accept:"application/vnd.github+json","Content-Type":"application/json"},body:JSON.stringify(body)});
+    if(p.status===409){await pullRemote();pushing=false;return pushRemote();}
+    if(!p.ok)throw new Error("写入失败 "+p.status);
+    setStatus("已同步 "+new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}),"ok");
+  }catch(e){setStatus("同步失败: "+e.message,"err");}
+  pushing=false;
+}
+async function pullRemote(){
+  if(!syncReady())return;
+  const {token,repo,path,branch}=cfg;
+  try{
+    const r=await fetch(`https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path)}?ref=${branch}`,{headers:{Authorization:"token "+token,Accept:"application/vnd.github+json"}});
+    if(r.status===404){setStatus("远端暂无文件，保存后将创建","warn");return;}
+    if(!r.ok)throw new Error("读取失败 "+r.status);
+    const j=await r.json();
+    const remote=JSON.parse(b64decode(j.content));
+    data=Object.assign(JSON.parse(JSON.stringify(DEFAULTS)),remote);
+    persistLocal();renderAll();setStatus("已拉取远端","ok");
+  }catch(e){setStatus("拉取失败: "+e.message,"err");}
+}
+function toggleSyncPanel(){const p=document.getElementById("syncPanel");p.style.display=p.style.display==="none"?"block":"none";if(p.style.display==="block"&&cfg){document.getElementById("cfgToken").value=cfg.token||"";document.getElementById("cfgRepo").value=cfg.repo||"";document.getElementById("cfgPath").value=cfg.path||"data.json";document.getElementById("cfgBranch").value=cfg.branch||"main";}}
+function saveCfgUI(){
+  cfg={token:document.getElementById("cfgToken").value.trim(),repo:document.getElementById("cfgRepo").value.trim(),path:document.getElementById("cfgPath").value.trim()||"data.json",branch:document.getElementById("cfgBranch").value.trim()||"main"};
+  saveCfg();setStatus("配置已保存","ok");pullRemote();
+}
+
+/* ---------- boot ---------- */
+function renderAll(){renderTodos();renderSch();renderBm();renderConn();memoEl.value=data.memo;wEl.textContent=data.weather;}
+renderAll();
+if(syncReady()){setStatus("已配置，正在拉取…","warn");pullRemote();}
+else setStatus("未配置（仅本机）","");
+</script>
+</body>
+</html>
